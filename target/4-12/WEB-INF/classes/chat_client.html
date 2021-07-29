@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>chat</title>
+    <script type="text/javascript">
+        var ws;
+        var url = "ws://localhost:12581/ws";
+        window.onload = connect;
+        var currentUsers = [];
+
+        function connect() {
+            if ('WebSocket' in window) {
+                ws = new WebSocket(url);
+            } else if ('MozWebSocket' in window) {
+                ws = new MozWebSocket(url);
+            } else {
+                alert('该浏览器不支持websocket');
+                return;
+            }
+
+            ws.open = function () {
+
+            };
+
+            ws.onmessage = function (event) {
+                eval("var result=" + event.data);
+                // //欢迎语言
+                // if (result.alert != undefined) {
+                //     document.getElementById("content").innerHTML += result.alert
+                //         + "<br/>";
+                // }
+                // //列表
+                // if (result.names != undefined) {
+                //     document.getElementById("userList").innerHTML = "";
+                //     var arr = result.names;
+                //     for (var i = 0; i < arr.length; i++) {
+                //         document.getElementById("userList").innerHTML += arr[i]
+                //             + "<br/>";
+                //     }
+                // }
+                //聊天内容
+
+                var message = event.data;
+                switch (message.messageType) {
+                    case "USER_ADD":
+                        document.getElementById("strname").innerHTML += JSON.parse(event.data).content
+                            + "<br/>";
+                        break;
+                    case "CHANGE_NAME":
+                        document.getElementById("content").innerHTML += JSON.parse(event.data).content
+                            + "<br/>";
+                        break;
+                    case "USER_LEAVE":
+                        break;
+                    case "CHAT_MSG":
+                        document.getElementById("content").innerHTML += JSON.parse(event.data).content
+                            + "<br/>";
+                        break;
+                    default:
+                        document.getElementById("content").innerHTML += JSON.parse(event.data).content
+                            + "<br/>";
+                        break;
+                }
+
+
+            };
+
+
+        }
+
+        function wsSend() {
+                var msg = document.getElementById("message");
+                var id = document.getElementById("channelId");
+                ws.send(JSON.stringify({
+                    "id": id.value,
+                    "content": msg.value,
+                    "messageType": "CHAT_MSG",
+                    "timestamp": new Date().getTime()
+                }));
+        }
+        function chaname() {
+            var msg = document.getElementById("changeName");
+            ws.send(JSON.stringify({
+                "content":msg.value,
+                "messageType":"CHANGE_NAME",
+                "timetamp":new Date().getTime()
+            }));
+        }
+        function UserAdd() {
+            var msg = document.getElementById("fiend");
+            ws.send(JSON.stringify({
+                    "content":msg.value,
+                    "messageType":"USER_ADD",
+                    "timetamp":new Date().getTime()
+
+                }));
+        }
+
+
+
+
+
+    </script>
+</head>
+<body>
+<div>
+    <br>
+    <input id="changeName" type="text" placeholder="请输入要修改的名字">
+    <button onclick="chaname()">确认修改</button>
+    <br>
+    <input id="channelId" type="text" placeholder="请输入channelId"/>
+    <input id="message" type="text" placeholder="请输入内容"/>
+    <button onclick="wsSend()">发送</button>
+    <br>
+    <input id="fiend" type="text" placeholder="输入添加好友的姓名">
+    <button onclick="UserAdd">添加好友</button>
+    <div id="strname"></div>
+    <h4 id = "content"></h4>
+
+
+
+    <div>
+
+    </div>
+</div>
+</body>
+</html>
